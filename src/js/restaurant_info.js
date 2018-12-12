@@ -137,16 +137,20 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   title.setAttribute('id','reviews-header');
   container.appendChild(title);
 
-  if (!reviews) {
-    const noReviews = document.createElement('p');
-    noReviews.innerHTML = 'No reviews yet!';
-    container.appendChild(noReviews);
-    return;
-  }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
+  const id = getParameterByName('id');
+  DBReviews.fetchReviewsByRestaurant(id, (error, reviews) => {
+    self.reviews = reviews;
+    if (!reviews) {
+      const noReviews = document.createElement('p');
+      noReviews.innerHTML = 'No reviews yet!';
+      container.appendChild(noReviews);
+      return;
+    } 
+    reviews.forEach(review => {
+      ul.appendChild(createReviewHTML(review));
+    });
   });
+  const ul = document.getElementById('reviews-list');
   container.appendChild(ul);
 }
 
@@ -157,43 +161,43 @@ createReviewHTML = (review) => {
   const li = document.createElement('li');
   li.setAttribute('tabindex','0');
   
-  const article = document.createElement('article');
+  const art = document.createElement('article');
+  art.setAttribute('role','article');
+  art.setAttribute('aria-label','review by '+review.name);
+  li.append(art);
 
-  article.setAttribute('role','article');
-  article.setAttribute('aria-label','review by '+review.name);
-  li.append(article);
-
-  const reviewDiv = document.createElement('div');
-  reviewDiv.className = 'review-title';
-  article.appendChild(reviewDiv);
+  const rev = document.createElement('div');
+  rev.className = 'review-title';
+  art.appendChild(rev);
 
   const name = document.createElement('p');
   name.innerHTML = review.name;
   name.className = 'reviewer';
-  article.setAttribute('aria-label','reviewer');
-  reviewDiv.appendChild(name);
+  art.setAttribute('aria-label','reviewer');
+  rev.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  // date.innerHTML = review.date;
+  date.innerHTML = new Date(review.updatedAt).toDateString();
   date.className = 'reviewDate';
   date.setAttribute('aria-label','review date');
-  reviewDiv.appendChild(date);
+  rev.appendChild(date);
 
   const ratingDiv = document.createElement('div');
   ratingDiv.className = 'rating';
-  article.appendChild(ratingDiv);
+  art.appendChild(ratingDiv);
 
   const rating = document.createElement('p');
   rating.className = 'ratings';
-  rating.innerHTML = `Rating: ${review.rating}`;
   rating.setAttribute('aria-label','rating');
+  rating.innerHTML = `Rating: ${review.rating}`;
   ratingDiv.appendChild(rating);
 
   const comments = document.createElement('p');
   comments.className = 'comments';
   comments.innerHTML = review.comments;
   comments.setAttribute('aria-label','comment');
-  article.appendChild(comments);
+  art.appendChild(comments);
 
   return li;
 }

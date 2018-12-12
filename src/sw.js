@@ -24,7 +24,8 @@ var urlsToCache = [
   './js/restaurant_info.js',
   './js/sw_registration.js',
   './js/optimization.js',
-  './js/lazyload.min.js'
+  './js/lazyload.min.js',
+  'js/dbreviews.js'
 ];
 
 // install cache
