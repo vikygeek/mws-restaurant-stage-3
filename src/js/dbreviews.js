@@ -114,20 +114,43 @@ class DBReviews {
    * Fetch reviews by restaurant.
    */
   static fetchReviewsByRestaurant(id, callback) {
-    // fetch all reviews from a restaurant with proper error handling.
-    DBReviews.fetchReviews((error, reviews) => {
-      // console.log(reviews);
-      if (error) {
-        callback(error, null);
-      } else {
-        const reviewList = reviews.filter(r => r.restaurant_id == id);
-        if(reviewList) {
-          callback(null, reviewList);
-        } else {
-          callback('Restaurant does not exist', null);
+    // // fetch all reviews from a restaurant with proper error handling.
+    // DBReviews.fetchReviews((error, reviews) => {
+    //   // console.log(reviews);
+    //   if (error) {
+    //     callback(error, null);
+    //   } else {
+    //     const reviewList = reviews.filter(r => r.restaurant_id == id);
+    //     if(reviewList) {
+    //       callback(null, reviewList);
+    //     } else {
+    //       callback('Restaurant does not exist', null);
+    //     }
+    //   }
+    // });
+
+    fetch(DBReviews.DATABASE_URL+'?restaurant_id='+id)
+    .then(response => {
+      console.log("rest " +response);
+      response.json().then(data => {
+        DBReviews.createDB(data);
+        callback(null,data);
+      })
+    })
+    .catch(error=> {
+      console.log('Failed to fetch reviews. Currently using cached data.');
+      DBReviews.getCachedData((error, reviews) => {
+          console.log(reviews);
+          if(reviews.length > 0) {
+            const reviewList = reviews.filter(r => r.restaurant_id == id);
+          if(reviewList) {
+            callback(null, reviewList);
+          } else {
+            callback('Restaurant does not exist', null);
+          }
         }
-      }
-    });
+      })
+    })
   }
 
 
@@ -165,23 +188,7 @@ class DBReviews {
               };
               return data;
             };
-          } else {
-            dbPromise.onsuccess = () => {
-              console.log('offline: ' + data);
-              // Start a new DB transaction
-              const db = dbPromise.result;
-              const tx = db.transaction("OfflineReviewsOS", "readwrite");
-              const store = tx.objectStore("OfflineReviewsOS");
-
-              store.put(data);
-
-              // Close the db when the transaction is done
-              tx.oncomplete = event => {
-                db.close();
-              };
-              return data;
-            };
-          }          
+          }    
         })
     })
     .catch( error => {
