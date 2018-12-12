@@ -99,12 +99,31 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   cuisine.setAttribute('aria-label','cuisine type');
   cuisine.innerHTML = restaurant.cuisine_type;
 
+  const favorite = document.getElementById('myFav');
+  setFavoriteButton(restaurant.is_favorite);
+  favorite.addEventListener('click', e => {
+    DBHelper.favouriteAction(restaurant.id, favorite.value, this.setFavoriteButton);
+  });
+  
+
   // fill operating hours
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
   // fill reviews
   fillReviewsHTML();
+}
+
+setFavoriteButton = (status) => {
+  const favorite = document.getElementById('myFav');
+  favorite.value = status==="true"?false:true;
+  if (status === 'true') {
+    favorite.title = 'Restaurant is Favorite';
+    favorite.innerHTML = '⭐️ Unfavorite';
+  } else {
+    favorite.title = 'Restaurant is not Favorite';
+    favorite.innerHTML = '☆ Favorite';
+  }
 }
 
 /**
@@ -355,4 +374,8 @@ getParameterByName = (name, url) => {
 
 fillMetaDesc = (restaurant = self.restaurant) => {
   document.querySelector('meta[name=description]').setAttribute("content","Review of " +restaurant.name);
+}
+
+favouriteAction = (id, is_favorite, callback) => {
+  DBHelper.favouriteAction(id,is_favorite, callback);
 }

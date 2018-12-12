@@ -257,5 +257,27 @@ class DBHelper {
     }
   }
 
+  static favouriteAction(id,is_favorite,callback) {
+    fetch(DBHelper.DATABASE_URL+'/'+id+'/?is_favorite='+is_favorite, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      referrer: 'no-referrer',
+      credentials: 'same-origin',
+      headers: {
+        Accept: "application/json"
+      }
+    })
+    .then(data=>{
+        data.json()
+        .then(jsonData => {
+          callback(jsonData.is_favorite);
+        }).catch();
+    })
+    .catch(error=> {
+        console.log("Error in making hotel as favourite");
+    });
+  }
+
 }
 
