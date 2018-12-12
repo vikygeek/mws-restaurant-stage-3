@@ -296,6 +296,33 @@ reviewForm.addEventListener('submit', event => {
     })
 })
 
+// Post data from IDB to server when online
+window.addEventListener('online', event => {
+  console.log("Onlineedddd");
+  event.preventDefault();
+  const dbPromise = DBReviews.openDB();
+  dbPromise.onsuccess = () => {
+    // Start a new DB transaction
+    const db = dbPromise.result;
+    const tx = db.transaction("OfflineReviewsOS", "readwrite");
+    const offlineStore = tx.objectStore("OfflineReviewsOS");
+     const offlineCached = offlineStore.getAll();
+    offlineCached.onsuccess = () => {
+      const offlineResult = offlineCached.result;
+      offlineResult.forEach(result => {
+        console.log('result: ' + result.id)
+        DBReviews.submitReviews(result);
+      })
+    }
+     // clear offline cache
+    offlineStore.clear();
+     // Close the db when the transaction is done
+    tx.oncomplete = event => {
+        db.close();
+    };
+  }
+ });
+
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */

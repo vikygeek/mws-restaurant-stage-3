@@ -184,6 +184,29 @@ class DBReviews {
           }          
         })
     })
-    .catch( error => console.log('Something went wrong with the submission. Error: ' + error))
+    .catch( error => {
+      console.log('Something went wrong with the submission. Error: ' + error);
+      console.log('Storing offline...');
+      this.storeOffline(reviewData);
+      console.log('Completed Storing in offline');
+    })
+  }
+
+  static storeOffline(reviewData) {
+    console.log('offline: ' + reviewData);
+    // Start a new DB transaction
+    const dbPromise = DBReviews.openDB();
+    dbPromise.onsuccess = () => {
+      const db = dbPromise.result;
+      const tx = db.transaction("OfflineReviewsOS", "readwrite");
+      const store = tx.objectStore("OfflineReviewsOS");
+
+      store.put(reviewData);
+
+      // Close the db when the transaction is done
+      tx.oncomplete = event => {
+        db.close();
+      };
+    }
   }
 }
