@@ -71,6 +71,7 @@ fetchRestaurantFromURL = (callback) => {
         return;
       }
       fillRestaurantHTML();
+      createFormHTML();
       fillMetaDesc();
       callback(null, restaurant)
     });
@@ -196,6 +197,100 @@ createReviewHTML = (review) => {
 
   return li;
 }
+
+/**
+ * Create form HTML and add it to the webpage.
+ */
+createFormHTML = () => {
+  const formContainer = document.getElementById('form-container');
+  const title = document.getElementById('form-title');
+  title.innerHTML = 'Write a Review';
+  formContainer.append(title);
+
+  const form = document.getElementById('review-form');
+  // form.setAttribute('method', 'post');
+  formContainer.append(form);
+
+  const ratingLabel = document.createElement('label');
+  ratingLabel.setAttribute('for','input-rating');
+  ratingLabel.innerHTML = 'Select Rating';
+  ratingLabel.className = 'form-label';
+  form.append(ratingLabel);
+
+  form.append(createRatingOptions());
+  
+  const nameLabel = document.createElement('label');
+  nameLabel.setAttribute('for','input-name');
+  nameLabel.innerHTML = 'Name';
+  nameLabel.className = 'form-label';
+  form.append(nameLabel);
+
+  const nameText = document.createElement('input');
+  nameText.className = 'form-input';
+  nameText.setAttribute('name', 'name');
+  nameText.setAttribute('id','input-name');
+  nameText.setAttribute('type','text');
+  form.append(nameText);
+
+  const reviewLabel = document.createElement('label');
+  reviewLabel.setAttribute('for','input-review');
+  reviewLabel.innerHTML = 'Review';
+  reviewLabel.className = 'form-label';
+  form.append(reviewLabel);
+
+  const reviewText = document.createElement('textarea');
+  reviewText.className = 'form-input';
+  reviewText.setAttribute('name', 'comments');
+  reviewText.setAttribute('id','input-review');
+  form.append(reviewText);
+
+  const submitButton = document.createElement('input');
+  submitButton.setAttribute('id','submit-button');
+  submitButton.setAttribute('type','submit');
+  form.append(submitButton);
+
+  return formContainer;
+}
+
+createRatingOptions = () => {
+  let i;
+  const ratingSelect = document.createElement('select');
+  ratingSelect.className = 'form-input';
+  ratingSelect.setAttribute('name', 'rating');
+  ratingSelect.setAttribute('id','input-rating');
+
+  for (i = 0; i < 5; i++) {
+    let ratingOptions = document.createElement('option');
+    ratingOptions.setAttribute('value', i+1);
+    ratingOptions.innerHTML = i+1;
+    ratingSelect.append(ratingOptions);
+  }
+
+  return ratingSelect;
+}
+
+
+const reviewForm = document.getElementById('review-form');
+reviewForm.addEventListener('submit', event => {
+  event.preventDefault()
+  let review = {'restaurant_id': self.restaurant.id};
+  let data = new FormData(reviewForm);  // get values from form
+  for(var [key, value] of data.entries()) {
+    review[key] = value;  // save form values to review
+  }
+  DBReviews.submitReviews(review)
+    .then(data => {
+      // append comment to page and reset form
+      const ul = document.getElementById('reviews-list');
+      review.createdAt = + new Date();
+      review.updatedAt = + new Date();
+      ul.appendChild(createReviewHTML(review));
+      reviewForm.reset();
+    })
+    .catch( error => {
+      console.log(error);
+    })
+})
 
 /**
  * Add restaurant name to the breadcrumb navigation menu
